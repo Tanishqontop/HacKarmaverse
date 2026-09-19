@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { DEMO_ACCOUNT, DEMO_CHECKOUT, normalizeEmail } from "../data/demo";
 import { PRODUCTS, getProduct, KARMA_TO_INR } from "../data/products";
 import { isoDaysFromNow, makeOrderId, newId } from "../lib/ids";
 import { loadDevice, requestNotifications, showLocalPush } from "../services/device";
@@ -15,6 +16,8 @@ import type {
   AppNotification,
   CartItem,
   ChatMessage,
+  DemoAccount,
+  DemoSession,
   DeviceIdentity,
   FcmOrderLink,
   GuestCheckout,
@@ -96,6 +99,10 @@ interface StoreValue {
   removeUsedListing: (id: string) => void;
   repairs: RepairRequest[];
   addRepairRequest: (request: Omit<RepairRequest, "id" | "createdAt" | "status">) => void;
+  session: DemoSession | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (input: { name: string; email: string; mobile: string; password: string }) => Promise<void>;
+  logout: () => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -115,6 +122,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [karmaBalance, setKarmaBalance] = useState(0);
   const [usedListings, setUsedListings] = useState<UsedListing[]>([]);
   const [repairs, setRepairs] = useState<RepairRequest[]>([]);
+  const [session, setSession] = useState<DemoSession | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -133,6 +141,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         karmaV,
         usedV,
         repairV,
+        sessionV,
       ] = await Promise.all([
         storage.getItem<CartItem[]>(KEYS.cart),
         storage.getItem<string[]>(KEYS.wishlist),
@@ -147,6 +156,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         storage.getItem<number>(KEYS.karma),
         storage.getItem<UsedListing[]>(KEYS.usedListings),
         storage.getItem<RepairRequest[]>(KEYS.repairs),
+        storage.getItem<DemoSession>(KEYS.session),
       ]);
       if (cancelled) return;
       setCart(cartV ?? []);
@@ -162,6 +172,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setKarmaBalance(typeof karmaV === "number" ? karmaV : 0);
       setUsedListings(usedV ?? []);
       setRepairs(repairV ?? []);
+      setSession(sessionV);
       setReady(true);
     })();
     return () => {
@@ -455,6 +466,71 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [persist],
   );
 
+  const applyLoggedIn = useCallback(
+    (account: DemoAccount) => {
+      const next: DemoSession = {
+        name: account.name,
+        email: account.email,
+        mobile: account.mobile,
+        loggedInAt: new Date().toISOString(),
+      };
+      setSession(next);
+      persist(KEYS.session, next);
+      const demo = normalizeEmail(account.email) === normalizeEmail(DEMO_ACCOUNT.email);
+      setCheckout({
+        fullName: account.name,
+        email: account.email,
+        mobile: account.mobile,
+        ...(demo ? DEMO_CHECKOUT : {}),
+      });
+    },
+    [persist, setCheckout],
+  );
+
+  const listAccounts = useCallback(async () => {
+    const extra = (await storage.getItem<DemoAccount[]>(KEYS.demoUsers)) ?? [];
+    return [DEMO_ACCOUNT, ...extra];
+  }, []);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const accounts = await listAccounts();
+      const found = accounts.find(
+        (u) => normalizeEmail(u.email) === normalizeEmail(email) && u.password === password,
+      );
+      if (!found) throw new Error("Email or password is wrong. Try demo@hackarmaverse.com / demo1234.");
+      applyLoggedIn(found);
+    },
+    [applyLoggedIn, listAccounts],
+  );
+
+  const signup = useCallback(
+    async (input: { name: string; email: string; mobile: string; password: string }) => {
+      const name = input.name.trim();
+      const email = normalizeEmail(input.email);
+      const mobile = input.mobile.trim();
+      const password = input.password;
+      if (name.length < 2) throw new Error("Enter your name.");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email.");
+      if (!/^[6-9]\d{9}$/.test(mobile)) throw new Error("Enter a 10-digit Indian mobile number.");
+      if (password.length < 6) throw new Error("Use at least 6 characters for the demo password.");
+      const accounts = await listAccounts();
+      if (accounts.some((u) => normalizeEmail(u.email) === email)) {
+        throw new Error("That email is already on this device. Log in instead.");
+      }
+      const extra = accounts.filter((u) => normalizeEmail(u.email) !== normalizeEmail(DEMO_ACCOUNT.email));
+      const created: DemoAccount = { name, email, mobile, password };
+      persist(KEYS.demoUsers, [...extra, created]);
+      applyLoggedIn(created);
+    },
+    [applyLoggedIn, listAccounts, persist],
+  );
+
+  const logout = useCallback(() => {
+    setSession(null);
+    void storage.removeItem(KEYS.session);
+  }, []);
+
   const addRepairRequest = useCallback(
     (request: Omit<RepairRequest, "id" | "createdAt" | "status">) => {
       const nextItem: RepairRequest = {
@@ -504,6 +580,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeUsedListing,
       repairs,
       addRepairRequest,
+      session,
+      login,
+      signup,
+      logout,
     }),
     [
       ready,
@@ -536,6 +616,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeUsedListing,
       repairs,
       addRepairRequest,
+      session,
+      login,
+      signup,
+      logout,
     ],
   );
 

@@ -124,6 +124,20 @@ export interface AppNotification {
   read: boolean;
 }
 
+export interface DemoAccount {
+  name: string;
+  email: string;
+  mobile: string;
+  password: string;
+}
+
+export interface DemoSession {
+  name: string;
+  email: string;
+  mobile: string;
+  loggedInAt: string;
+}
+
 export interface DeviceIdentity {
   deviceId: string;
   fcmToken: string;

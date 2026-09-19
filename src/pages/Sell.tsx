@@ -18,8 +18,12 @@ const empty = {
 };
 
 export function SellPage() {
-  const { usedListings, addUsedListing, removeUsedListing } = useStore();
-  const [form, setForm] = useState(empty);
+  const { usedListings, addUsedListing, removeUsedListing, session } = useStore();
+  const [form, setForm] = useState({
+    ...empty,
+    sellerName: session?.name ?? "",
+    mobile: session?.mobile ?? "",
+  });
   const [photo, setPhoto] = useState<string>();
   const [error, setError] = useState("");
 

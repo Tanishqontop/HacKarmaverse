@@ -121,6 +121,8 @@ h2,
 }
 
 .brand {
+  text-decoration: none;
+  color: inherit;
   display: flex;
   align-items: baseline;
   gap: 8px;

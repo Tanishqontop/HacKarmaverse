@@ -8,6 +8,7 @@ import { SearchPage } from "./pages/Explore";
 import { SellPage } from "./pages/Sell";
 import { HelpPage, AboutPage, PrivacyPage, TermsPage } from "./pages/Help";
 import { HomePage } from "./pages/Home";
+import { LoginPage } from "./pages/Login";
 import { MorePage } from "./pages/More";
 import { NotificationsPage } from "./pages/Notifications";
 import { OrderDetailPage } from "./pages/OrderDetail";
@@ -42,9 +43,9 @@ export default function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
-            <Route path="/login" element={<Navigate to="/home" replace />} />
-            <Route path="/signup" element={<Navigate to="/home" replace />} />
-            <Route path="/forgot-password" element={<Navigate to="/home" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<LoginPage />} />
             <Route path="/profile" element={<Navigate to="/more" replace />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

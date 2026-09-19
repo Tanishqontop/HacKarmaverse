@@ -28,6 +28,9 @@ export function HomePage() {
           <Link className="btn" to="/repair">
             Repair
           </Link>
+          <Link className="btn ghost" to="/login">
+            Demo login
+          </Link>
         </div>
 
         <div className="cats">

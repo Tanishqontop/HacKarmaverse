@@ -44,4 +44,6 @@ export const KEYS = {
   karma: "haat.karmaCoins",
   usedListings: "haat.usedListings",
   repairs: "haat.repairs",
+  session: "haat.demoSession",
+  demoUsers: "haat.demoUsers",
 } as const;

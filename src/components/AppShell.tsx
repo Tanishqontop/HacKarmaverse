@@ -21,7 +21,7 @@ export function TopBar({
   title?: string;
   back?: string;
 }) {
-  const { karmaBalance } = useStore();
+  const { karmaBalance, session } = useStore();
   return (
     <header className="topbar">
       {back ? (
@@ -29,10 +29,10 @@ export function TopBar({
           ←
         </Link>
       ) : (
-        <div className="brand">
+        <Link to="/home" className="brand">
           <strong>Haat</strong>
-          <span>guest</span>
-        </div>
+          <span>{session ? session.name.split(" ")[0] : "guest"}</span>
+        </Link>
       )}
       {title ? <b className="topbar-title">{title}</b> : <span />}
       <div className="topbar-end">

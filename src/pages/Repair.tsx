@@ -29,8 +29,12 @@ const empty = {
 };
 
 export function RepairPage() {
-  const { repairs, addRepairRequest } = useStore();
-  const [form, setForm] = useState(empty);
+  const { repairs, addRepairRequest, session } = useStore();
+  const [form, setForm] = useState({
+    ...empty,
+    name: session?.name ?? "",
+    mobile: session?.mobile ?? "",
+  });
   const [photo, setPhoto] = useState<string>();
   const [error, setError] = useState("");
   const [doneId, setDoneId] = useState("");

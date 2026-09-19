@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { cartProducts, useStore } from "../context/Store";
 import { formatInr, KARMA_TO_INR } from "../data/products";
@@ -19,7 +19,8 @@ const STATES = [
 ];
 
 export function CheckoutPage() {
-  const { cart, checkout, setCheckout, placeOrder, enableNotifications, device, karmaBalance } = useStore();
+  const { cart, checkout, setCheckout, placeOrder, enableNotifications, device, karmaBalance, session } =
+    useStore();
   const rows = cartProducts(cart);
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -57,11 +58,20 @@ export function CheckoutPage() {
 
   return (
     <>
-      <TopBar title="Guest checkout" back="/cart" />
+      <TopBar title={session ? "Checkout" : "Guest checkout"} back="/cart" />
       <div className="page">
         <div className="notice">
-          We collect this only for this order. No password, OTP, or account is created. Track later with Order ID +
-          mobile.
+          {session ? (
+            <>
+              Prefilling from the demo login for {session.name}. You can still edit the address. Track later with Order
+              ID + mobile.
+            </>
+          ) : (
+            <>
+              We collect this only for this order. No password or OTP is required.{" "}
+              <Link to="/login">Demo login</Link> prefills a sample profile. Track later with Order ID + mobile.
+            </>
+          )}
         </div>
 
         {rows.length === 0 ? (

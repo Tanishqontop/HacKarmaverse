@@ -14,16 +14,36 @@ const links = [
 ];
 
 export function MorePage() {
-  const { device, karmaBalance } = useStore();
+  const { device, karmaBalance, session, logout } = useStore();
   return (
     <>
       <TopBar title="More" />
       <div className="page">
         <div className="notice">
-          <b>{karmaBalance} KarmaCoins</b> on this device. Coins are credited at guest checkout — not a user account.
+          {session ? (
+            <>
+              Signed in as <b>{session.name}</b> ({session.email}) — demo session on this device only.
+              <br />
+            </>
+          ) : (
+            <>
+              Shopping as a guest. Use <Link to="/login">demo login</Link> to prefill checkout.
+              <br />
+            </>
+          )}
+          <b>{karmaBalance} KarmaCoins</b> stay on this device with cart, wishlist, and chats.
           <br />
-          Device {device?.deviceId} holds cart, wishlist, chats, and coins until you clear site data.
+          Device {device?.deviceId}
         </div>
+        {session ? (
+          <button className="btn ghost" type="button" style={{ marginBottom: 12 }} onClick={logout}>
+            Log out
+          </button>
+        ) : (
+          <Link className="btn" to="/login" style={{ marginBottom: 16, display: "inline-flex" }}>
+            Demo login
+          </Link>
+        )}
         {links.map((l) => (
           <Link key={l.to} className="more-link" to={l.to}>
             <span>{l.label}</span>

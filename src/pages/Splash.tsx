@@ -13,10 +13,10 @@ export function SplashPage() {
       <div className="orb" />
       <div className="orb2" />
       <p className="muted" style={{ color: "#cfc3ae" }}>
-        Marketplace · no account
+        Marketplace · guest or demo login
       </p>
       <h1>Haat</h1>
-      <p>Walk in like a bazaar. Browse, ask, buy. Checkout as a guest.</p>
+      <p>Walk in like a bazaar. Browse, ask, buy. Checkout as a guest, or use the demo login.</p>
     </section>
   );
 }
