@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { cartProducts, useStore } from "../context/Store";
@@ -25,13 +25,17 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [redeem, setRedeem] = useState(0);
-
   const subtotal = rows.reduce((s, r) => s + r.product.price * r.qty, 0);
   const delivery = subtotal >= 999 || subtotal === 0 ? 0 : 49;
   const payable = subtotal + delivery;
   const coinsEarned = rows.reduce((s, r) => s + r.product.karmaCoins * r.qty, 0);
   const maxRedeem = Math.min(karmaBalance, payable);
+  const [redeem, setRedeem] = useState(0);
+
+  useEffect(() => {
+    setRedeem(maxRedeem);
+  }, [maxRedeem]);
+
   const safeRedeem = Math.min(redeem, maxRedeem);
   const toPay = Math.max(0, payable - safeRedeem * KARMA_TO_INR);
 
@@ -125,8 +129,8 @@ export function CheckoutPage() {
 
         <h2>KarmaCoins</h2>
         <div className="notice">
-          You have <b>{karmaBalance}</b> on this device. 1 KarmaCoin = {formatInr(KARMA_TO_INR)}. This order will also
-          credit {coinsEarned} after purchase.
+          You have <b>{karmaBalance}</b> on this device. 1 KarmaCoin = {formatInr(KARMA_TO_INR)}. Available coins are
+          applied to this order unless you choose Use none. After payment you still earn {coinsEarned} coins.
         </div>
         {maxRedeem > 0 ? (
           <div className="field">
@@ -200,7 +204,11 @@ export function CheckoutPage() {
         </p>
         {error ? <p style={{ color: "var(--danger)" }}>{error}</p> : null}
         <button className="btn" type="button" disabled={busy} onClick={() => void submit()}>
-          {busy ? "Placing…" : "Place order"}
+          {busy
+            ? "Placing…"
+            : safeRedeem > 0
+              ? `Place order · redeem ${safeRedeem} coins`
+              : "Place order"}
         </button>
       </div>
     </>

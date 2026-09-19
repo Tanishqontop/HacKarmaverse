@@ -46,6 +46,21 @@ function tokens(s: string) {
     .filter((w) => w.length > 2 && !STOP.has(w));
 }
 
+function productLabel(product: Product) {
+  return product.brand || product.name;
+}
+
+/** Excel answers say “prototype”; speak the actual stall name instead. */
+function speakAsProduct(text: string, product: Product) {
+  const name = productLabel(product);
+  return text
+    .replace(/\bthis prototype\b/gi, `this ${name}`)
+    .replace(/\bthe current prototype\b/gi, `the current ${name}`)
+    .replace(/\bthe prototype\b/gi, `the ${name}`)
+    .replace(/\ba prototype\b/gi, `a ${name}`)
+    .replace(/\bprototype\b/gi, name);
+}
+
 export function answerAboutProduct(product: Product, question: string): string {
   const q = question.trim();
   if (!q) {
@@ -57,7 +72,7 @@ export function answerAboutProduct(product: Product, question: string): string {
     return `${product.name} is ${formatInr(product.price)}. A guest purchase credits ${product.karmaCoins} KarmaCoins per unit to this device. No account is created.`;
   }
   if (/\b(price|cost|mrp|₹|\brs\b)\b/.test(ql) || /\bhow much (does it cost|is it|for this|do i pay)\b/.test(ql)) {
-    return `${product.name} is ${formatInr(product.price)} (prototype list price). You also receive ${product.karmaCoins} KarmaCoins per unit after checkout.`;
+    return `${product.name} is ${formatInr(product.price)} (${productLabel(product)} list price). You also receive ${product.karmaCoins} KarmaCoins per unit after checkout.`;
   }
 
   const bank = PRODUCT_QA[product.id] ?? [];
@@ -80,7 +95,7 @@ export function answerAboutProduct(product: Product, question: string): string {
   }
 
   const min = qt.length <= 3 ? 2.8 : 4;
-  if (bestAnswer && bestScore >= min) return bestAnswer;
+  if (bestAnswer && bestScore >= min) return speakAsProduct(bestAnswer, product);
 
   const suggestions = customerQuestions(product.id)
     .slice(0, 4)

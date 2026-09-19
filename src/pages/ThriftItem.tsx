@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { useStore } from "../context/Store";
@@ -27,7 +27,18 @@ export function ThriftItemPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const delivery = listing && listing.price >= 999 ? 0 : listing ? 49 : 0;
+  const payable = listing ? listing.price + delivery : 0;
+  const coinsEarned = listing ? listingKarma(listing.price) : 0;
+  const maxRedeem = listing && !listing.sold ? Math.min(karmaBalance, payable) : 0;
   const [redeem, setRedeem] = useState(0);
+
+  useEffect(() => {
+    setRedeem(maxRedeem);
+  }, [maxRedeem]);
+
+  const safeRedeem = Math.min(redeem, maxRedeem);
+  const toPay = Math.max(0, payable - safeRedeem * KARMA_TO_INR);
 
   if (!listing) {
     return (
@@ -37,13 +48,6 @@ export function ThriftItemPage() {
       </>
     );
   }
-
-  const delivery = listing.price >= 999 ? 0 : 49;
-  const payable = listing.price + delivery;
-  const coinsEarned = listingKarma(listing.price);
-  const maxRedeem = listing.sold ? 0 : Math.min(karmaBalance, payable);
-  const safeRedeem = Math.min(redeem, maxRedeem);
-  const toPay = Math.max(0, payable - safeRedeem * KARMA_TO_INR);
 
   async function submit() {
     setError("");
@@ -190,7 +194,13 @@ export function ThriftItemPage() {
         </p>
         {error ? <p style={{ color: "var(--danger)" }}>{error}</p> : null}
         <button className="btn" type="button" disabled={busy || listing.sold} onClick={() => void submit()}>
-          {listing.sold ? "Sold" : busy ? "Placing…" : "Buy used"}
+          {listing.sold
+            ? "Sold"
+            : busy
+              ? "Placing…"
+              : safeRedeem > 0
+                ? `Buy used · redeem ${safeRedeem} coins`
+                : "Buy used"}
         </button>
         <Link className="btn ghost" to="/thrift" style={{ marginTop: 10 }}>
           Back to thrift
