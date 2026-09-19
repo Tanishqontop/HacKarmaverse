@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { ProductCard } from "../components/ProductCard";
 import { useStore } from "../context/Store";
@@ -31,10 +31,14 @@ export function SearchPage() {
 
   return (
     <>
-      <TopBar title="Explore" back="/home" />
+      <TopBar title="Haat" back="/home" />
       <div className="page">
+        <div className="notice">
+          The Haat catalogue is the six new products only. Used goods live in a separate{" "}
+          <Link to="/thrift">Thrift</Link> stall.
+        </div>
         <div className="field">
-          <label htmlFor="q">Search the bazaar</label>
+          <label htmlFor="q">Search Haat</label>
           <input
             id="q"
             value={q}

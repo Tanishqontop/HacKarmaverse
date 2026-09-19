@@ -3,6 +3,9 @@ import { TopBar } from "../components/AppShell";
 import { useStore } from "../context/Store";
 
 const links = [
+  { to: "/haat", label: "Haat — six new products" },
+  { to: "/thrift", label: "Thrift — used marketplace" },
+  { to: "/orders", label: "Orders" },
   { to: "/sell", label: "Sell used products" },
   { to: "/repair", label: "Request a repair" },
   { to: "/wishlist", label: "Wishlist" },
@@ -36,7 +39,7 @@ export function MorePage() {
           Device {device?.deviceId}
         </div>
         {session ? (
-          <button className="btn ghost" type="button" style={{ marginBottom: 12 }} onClick={logout}>
+          <button className="btn" type="button" style={{ marginBottom: 12 }} onClick={() => { logout(); }}>
             Log out
           </button>
         ) : (

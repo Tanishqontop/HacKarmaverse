@@ -6,6 +6,8 @@ import { CheckoutPage } from "./pages/Checkout";
 import { RepairPage } from "./pages/Repair";
 import { SearchPage } from "./pages/Explore";
 import { SellPage } from "./pages/Sell";
+import { ThriftPage } from "./pages/Thrift";
+import { ThriftItemPage } from "./pages/ThriftItem";
 import { HelpPage, AboutPage, PrivacyPage, TermsPage } from "./pages/Help";
 import { HomePage } from "./pages/Home";
 import { LoginPage } from "./pages/Login";
@@ -28,6 +30,7 @@ export default function App() {
             <Route path="/splash" element={<SplashPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/haat" element={<SearchPage />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
@@ -36,6 +39,8 @@ export default function App() {
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/sell" element={<SellPage />} />
+            <Route path="/thrift/:id" element={<ThriftItemPage />} />
+            <Route path="/thrift" element={<ThriftPage />} />
             <Route path="/repair" element={<RepairPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/help" element={<HelpPage />} />

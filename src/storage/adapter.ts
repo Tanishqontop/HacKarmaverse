@@ -46,4 +46,5 @@ export const KEYS = {
   repairs: "haat.repairs",
   session: "haat.demoSession",
   demoUsers: "haat.demoUsers",
+  thriftSeeded: "haat.thriftSeeded",
 } as const;

@@ -38,7 +38,7 @@ export function LoginPage() {
 
   return (
     <>
-      <TopBar title={mode === "login" ? "Demo login" : "Demo signup"} back="/more" />
+      <TopBar title={mode === "login" ? "Demo login" : "Demo signup"} />
       <div className="page">
         <div className="notice">
           Demo only — no OTP, no server, no real account. The built-in judge login is{" "}
@@ -46,12 +46,16 @@ export function LoginPage() {
         </div>
 
         {session ? (
-          <p className="muted">
-            Signed in as {session.name} ({session.email}).{" "}
-            <Link to="/more">Go to More</Link> to log out.
-          </p>
-        ) : null}
-
+          <>
+            <p className="muted">
+              Signed in as {session.name} ({session.email}).
+            </p>
+            <Link className="btn" to="/home">
+              Enter shop
+            </Link>
+          </>
+        ) : (
+          <>
         <div className="row" style={{ marginBottom: 16 }}>
           <button className={mode === "login" ? "btn" : "btn ghost"} type="button" onClick={() => setMode("login")}>
             Log in
@@ -115,6 +119,8 @@ export function LoginPage() {
             Continue as guest
           </Link>
         </div>
+          </>
+        )}
       </div>
     </>
   );

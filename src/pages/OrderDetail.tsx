@@ -51,14 +51,22 @@ export function OrderDetailPage() {
         </p>
 
         <h2>Items</h2>
-        {order.items.map((i) => {
-          const p = getProduct(i.productId);
-          return (
-            <p key={i.productId}>
-              {p?.name ?? i.productId} × {i.qty}
-            </p>
-          );
-        })}
+        {order.thrift ? (
+          <p>
+            Thrift · {order.thrift.title} · {formatInr(order.thrift.price)}
+            <br />
+            Seller {order.thrift.sellerName} ({order.thrift.sellerMobile}) · {order.thrift.city}
+          </p>
+        ) : (
+          order.items.map((i) => {
+            const p = getProduct(i.productId);
+            return (
+              <p key={i.productId}>
+                {p?.name ?? i.productId} × {i.qty}
+              </p>
+            );
+          })
+        )}
         <p>
           Paid via {order.guest.paymentMethod.toUpperCase()} · {formatInr(order.total)}
           <br />

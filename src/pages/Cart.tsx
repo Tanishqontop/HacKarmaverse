@@ -19,8 +19,8 @@ export function CartPage() {
         {rows.length === 0 ? (
           <div className="empty">
             <p>Your basket is a still life.</p>
-            <Link to="/home" className="btn" style={{ display: "inline-flex", width: "auto", paddingInline: 24 }}>
-              Browse the haat
+            <Link to="/haat" className="btn" style={{ display: "inline-flex", width: "auto", paddingInline: 24 }}>
+              Browse Haat
             </Link>
           </div>
         ) : (

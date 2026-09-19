@@ -9,6 +9,7 @@ import {
 } from "react";
 import { DEMO_ACCOUNT, DEMO_CHECKOUT, normalizeEmail } from "../data/demo";
 import { PRODUCTS, getProduct, KARMA_TO_INR } from "../data/products";
+import { listingKarma, RETIRED_THRIFT_IDS, THRIFT_SEED } from "../data/thrift";
 import { isoDaysFromNow, makeOrderId, newId } from "../lib/ids";
 import { loadDevice, requestNotifications, showLocalPush } from "../services/device";
 import { KEYS, storage } from "../storage/adapter";
@@ -97,6 +98,7 @@ interface StoreValue {
   usedListings: UsedListing[];
   addUsedListing: (listing: Omit<UsedListing, "id" | "createdAt">) => void;
   removeUsedListing: (id: string) => void;
+  buyUsedListing: (listingId: string, redeemCoins?: number) => Promise<Order>;
   repairs: RepairRequest[];
   addRepairRequest: (request: Omit<RepairRequest, "id" | "createdAt" | "status">) => void;
   session: DemoSession | null;
@@ -170,7 +172,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setFcmLinks(linksV ?? []);
       setDevice(deviceV);
       setKarmaBalance(typeof karmaV === "number" ? karmaV : 0);
-      setUsedListings(usedV ?? []);
+      let listings = (usedV ?? []).filter(
+        (l) =>
+          !RETIRED_THRIFT_IDS.has(l.id) &&
+          !l.photo?.startsWith("/products/") &&
+          !/cane stool/i.test(l.title),
+      );
+      const have = new Set(listings.map((l) => l.id));
+      const missing = THRIFT_SEED.filter((s) => !have.has(s.id));
+      if (missing.length > 0 || listings.length !== (usedV ?? []).length) {
+        listings = [...missing, ...listings];
+        void storage.setItem(KEYS.usedListings, listings);
+        void storage.setItem(KEYS.thriftSeeded, true);
+      }
+      setUsedListings(listings);
       setRepairs(repairV ?? []);
       setSession(sessionV);
       setReady(true);
@@ -445,6 +460,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...listing,
         id: newId("USED"),
         createdAt: new Date().toISOString(),
+        sold: false,
       };
       setUsedListings((prev) => {
         const next = [nextItem, ...prev];
@@ -453,6 +469,95 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
     },
     [persist],
+  );
+
+  const buyUsedListing = useCallback(
+    async (listingId: string, redeemCoins = 0) => {
+      if (!device) throw new Error("Device not ready");
+      const listing = usedListings.find((l) => l.id === listingId);
+      if (!listing) throw new Error("That listing is gone.");
+      if (listing.sold) throw new Error("Someone already bought this.");
+      const subtotal = listing.price;
+      const deliveryFee = subtotal >= 999 ? 0 : 49;
+      const payable = subtotal + deliveryFee;
+      const maxRedeem = Math.min(karmaBalance, payable);
+      const karmaRedeemed = Math.max(0, Math.min(Math.floor(redeemCoins), maxRedeem));
+      const discount = karmaRedeemed * KARMA_TO_INR;
+      const karmaEarned = listingKarma(listing.price);
+      const order: Order = {
+        id: makeOrderId(),
+        createdAt: new Date().toISOString(),
+        items: [],
+        guest: checkout,
+        subtotal,
+        deliveryFee,
+        total: Math.max(0, payable - discount),
+        status: "placed",
+        expectedDelivery: isoDaysFromNow(3),
+        fcmToken: device.fcmToken,
+        timeline: [
+          {
+            status: "placed",
+            at: new Date().toISOString(),
+            note:
+              karmaRedeemed > 0
+                ? `Thrift buy confirmed. Redeemed ${karmaRedeemed} KarmaCoins.`
+                : "Thrift buy confirmed. Seller will pack the used item.",
+          },
+        ],
+        karmaCoins: karmaEarned,
+        karmaRedeemed,
+        kind: "thrift",
+        thrift: {
+          listingId: listing.id,
+          title: listing.title,
+          price: listing.price,
+          condition: listing.condition,
+          sellerName: listing.sellerName,
+          sellerMobile: listing.mobile,
+          city: listing.city,
+          photo: listing.photo,
+        },
+      };
+
+      setUsedListings((prev) => {
+        const next = prev.map((l) => (l.id === listingId ? { ...l, sold: true } : l));
+        persist(KEYS.usedListings, next);
+        return next;
+      });
+
+      setOrders((prev) => {
+        const next = [order, ...prev];
+        persist(KEYS.orders, next);
+        return next;
+      });
+
+      const link: FcmOrderLink = {
+        fcmToken: device.fcmToken,
+        orderId: order.id,
+        linkedAt: new Date().toISOString(),
+      };
+      setFcmLinks((prev) => {
+        const next = [link, ...prev];
+        persist(KEYS.fcmLinks, next);
+        return next;
+      });
+
+      setKarmaBalance((prev) => {
+        const next = prev - karmaRedeemed + karmaEarned;
+        persist(KEYS.karma, next);
+        return next;
+      });
+
+      addNotification(
+        "Thrift order placed",
+        `${order.id} · ${listing.title} · ${listing.city}`,
+        order.id,
+      );
+
+      return order;
+    },
+    [addNotification, checkout, device, karmaBalance, persist, usedListings],
   );
 
   const removeUsedListing = useCallback(
@@ -578,6 +683,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       usedListings,
       addUsedListing,
       removeUsedListing,
+      buyUsedListing,
       repairs,
       addRepairRequest,
       session,
@@ -614,6 +720,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       usedListings,
       addUsedListing,
       removeUsedListing,
+      buyUsedListing,
       repairs,
       addRepairRequest,
       session,

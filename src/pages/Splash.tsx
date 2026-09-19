@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export function SplashPage() {
   const navigate = useNavigate();
   useEffect(() => {
-    const t = window.setTimeout(() => navigate("/home", { replace: true }), 1600);
+    const t = window.setTimeout(() => navigate("/login", { replace: true }), 1600);
     return () => window.clearTimeout(t);
   }, [navigate]);
 
@@ -16,7 +16,7 @@ export function SplashPage() {
         Marketplace · guest or demo login
       </p>
       <h1>Haat</h1>
-      <p>Walk in like a bazaar. Browse, ask, buy. Checkout as a guest, or use the demo login.</p>
+      <p>New catalogue in Haat. Used goods in Thrift. Checkout as a guest, or use the demo login.</p>
     </section>
   );
 }

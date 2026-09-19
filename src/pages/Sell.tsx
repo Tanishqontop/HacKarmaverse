@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { useStore } from "../context/Store";
 import { CATEGORIES, formatInr } from "../data/products";
@@ -65,7 +66,8 @@ export function SellPage() {
       <TopBar title="Sell used" back="/more" />
       <div className="page">
         <div className="notice">
-          List a used item as a guest. Buyers see your name, city, and mobile — no account is created.
+          List a used item as a guest. It appears in the <Link to="/thrift">thrift marketplace</Link> for buyers on this
+          device. Buyers see your name, city, and mobile.
         </div>
 
         <h2>Add your product</h2>
@@ -160,15 +162,21 @@ export function SellPage() {
                 <div>
                   <b>{l.title}</b>
                   <div className="muted">
+                    {l.sold ? "Sold · " : ""}
                     {formatInr(l.price)} · {l.condition.replace("_", " ")} · {l.city}
                   </div>
                   <p>{l.description}</p>
                   <div className="muted">
                     {l.sellerName} · {l.mobile} · {formatTime(l.createdAt)}
                   </div>
-                  <button className="btn ghost" type="button" onClick={() => removeUsedListing(l.id)}>
-                    Remove
-                  </button>
+                  <div className="row" style={{ marginTop: 8 }}>
+                    <Link className="btn ghost" to={`/thrift/${l.id}`}>
+                      View in thrift
+                    </Link>
+                    <button className="btn ghost" type="button" onClick={() => removeUsedListing(l.id)}>
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}

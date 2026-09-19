@@ -60,6 +60,32 @@ export interface GuestCheckout {
   paymentMethod: PaymentMethod;
 }
 
+export interface UsedListing {
+  id: string;
+  title: string;
+  category: string;
+  condition: "working" | "fair" | "for_parts";
+  price: number;
+  description: string;
+  sellerName: string;
+  mobile: string;
+  city: string;
+  photo?: string;
+  createdAt: string;
+  sold?: boolean;
+}
+
+export interface ThriftSnapshot {
+  listingId: string;
+  title: string;
+  price: number;
+  condition: UsedListing["condition"];
+  sellerName: string;
+  sellerMobile: string;
+  city: string;
+  photo?: string;
+}
+
 export interface Order {
   id: string;
   createdAt: string;
@@ -74,20 +100,8 @@ export interface Order {
   timeline: { status: OrderStatus; at: string; note: string }[];
   karmaCoins: number;
   karmaRedeemed: number;
-}
-
-export interface UsedListing {
-  id: string;
-  title: string;
-  category: string;
-  condition: "working" | "fair" | "for_parts";
-  price: number;
-  description: string;
-  sellerName: string;
-  mobile: string;
-  city: string;
-  photo?: string;
-  createdAt: string;
+  kind?: "catalog" | "thrift";
+  thrift?: ThriftSnapshot;
 }
 
 export interface RepairRequest {

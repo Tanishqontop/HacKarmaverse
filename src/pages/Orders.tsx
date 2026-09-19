@@ -52,6 +52,7 @@ export function OrdersPage() {
                 <div>
                   <b>{o.id}</b>
                   <div className="muted">
+                    {o.kind === "thrift" ? "Thrift · " : ""}
                     {o.status.replaceAll("_", " ")} · {formatInr(o.total)}
                   </div>
                   <div className="muted">ETA {formatDate(o.expectedDelivery)}</div>
