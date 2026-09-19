@@ -46,6 +46,10 @@ const STATUS_FLOW: { status: OrderStatus; afterMs: number; note: string }[] = [
   { status: "delivered", afterMs: 32000, note: "Left at the door. Enjoy." },
 ];
 
+function nextKarmaBalance(prev: number, redeemed: number, earned: number) {
+  return Math.max(0, prev - Math.max(0, redeemed)) + Math.max(0, earned);
+}
+
 function applyDeliveryProgress(order: Order, now = Date.now()): Order {
   const created = new Date(order.createdAt).getTime();
   let next = order;
@@ -430,11 +434,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCart([]);
     persist(KEYS.cart, []);
 
-    setKarmaBalance((prev) => {
-      const next = prev - karmaRedeemed + karmaEarned;
-      persist(KEYS.karma, next);
-      return next;
-    });
+    const nextKarma = nextKarmaBalance(karmaBalance, karmaRedeemed, karmaEarned);
+    setKarmaBalance(nextKarma);
+    persist(KEYS.karma, nextKarma);
 
     addNotification(
       "Order placed successfully",
@@ -543,11 +545,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
-      setKarmaBalance((prev) => {
-        const next = prev - karmaRedeemed + karmaEarned;
-        persist(KEYS.karma, next);
-        return next;
-      });
+      const nextKarma = nextKarmaBalance(karmaBalance, karmaRedeemed, karmaEarned);
+      setKarmaBalance(nextKarma);
+      persist(KEYS.karma, nextKarma);
 
       addNotification(
         "Thrift order placed",

@@ -6,7 +6,7 @@ import { formatDate } from "../lib/ids";
 export function OrderSuccessPage() {
   const [params] = useSearchParams();
   const id = params.get("id") ?? "";
-  const { orders } = useStore();
+  const { orders, karmaBalance } = useStore();
   const order = orders.find((o) => o.id === id) ?? orders[0];
 
   if (!order) {
@@ -46,6 +46,11 @@ export function OrderSuccessPage() {
               <b>−{order.karmaRedeemed}</b>
             </p>
           ) : null}
+          <p>
+            Balance now
+            <br />
+            <b>{karmaBalance}</b>
+          </p>
         </div>
         <Link className="btn" to={`/order/${order.id}`}>
           Track order
