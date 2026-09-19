@@ -157,7 +157,7 @@ export function CheckoutPage() {
         ) : karmaBalance > 0 ? (
           <p className="muted">Add items to the cart to redeem your {karmaBalance} KarmaCoins (1 coin = ₹1).</p>
         ) : (
-          <p className="muted">Earn coins on this order, then redeem them on the next guest checkout.</p>
+          <p className="muted">Earn coins on this order, then redeem them on the next checkout.</p>
         )}
 
         <h2>Payment</h2>

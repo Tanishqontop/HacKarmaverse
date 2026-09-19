@@ -5,7 +5,7 @@ import { cartProducts, useStore } from "../context/Store";
 import { formatInr } from "../data/products";
 
 export function CartPage() {
-  const { cart, setQty, removeFromCart } = useStore();
+  const { cart, setQty, removeFromCart, session } = useStore();
   const rows = cartProducts(cart);
   const navigate = useNavigate();
   const subtotal = rows.reduce((s, r) => s + r.product.price * r.qty, 0);
@@ -61,9 +61,11 @@ export function CartPage() {
               <br />
               This order credits {coins} KarmaCoins
             </p>
-            <p className="muted">Free delivery over ₹999. Checkout does not create an account.</p>
+            <p className="muted">
+              Free delivery over ₹999{session ? "." : ". Checkout does not create an account."}
+            </p>
             <button className="btn" type="button" onClick={() => navigate("/checkout")}>
-              Checkout as guest
+              {session ? "Checkout" : "Checkout as guest"}
             </button>
           </>
         )}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { TopBar } from "../components/AppShell";
 import { useStore } from "../context/Store";
@@ -10,21 +10,19 @@ export function ProductPage() {
   const { id = "" } = useParams();
   const product = getProduct(id);
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, wishlist, viewProduct, chats, pushChat } = useStore();
+  const { addToCart, toggleWishlist, wishlist, viewProduct, session } = useStore();
   const [q, setQ] = useState("");
   const [added, setAdded] = useState(false);
   const [photo, setPhoto] = useState(0);
+  const [thread, setThread] = useState<{ id: string; role: "user" | "ai"; text: string }[]>([]);
 
   useEffect(() => {
     setPhoto(0);
     setAdded(false);
+    setQ("");
+    setThread([]);
     if (product) viewProduct(product.id);
   }, [product, viewProduct]);
-
-  const thread = useMemo(
-    () => chats.filter((m) => m.productId === id),
-    [chats, id],
-  );
 
   if (!product) {
     return (
@@ -38,8 +36,11 @@ export function ProductPage() {
   function ask(text = q) {
     const trimmed = text.trim();
     if (!trimmed || !product) return;
-    pushChat(product.id, "user", trimmed);
-    pushChat(product.id, "ai", answerAboutProduct(product, trimmed));
+    setThread((prev) => [
+      ...prev,
+      { id: `u-${Date.now()}`, role: "user", text: trimmed },
+      { id: `a-${Date.now()}-ai`, role: "ai", text: answerAboutProduct(product, trimmed) },
+    ]);
     setQ("");
   }
 
@@ -85,8 +86,8 @@ export function ProductPage() {
           {product.mrp > product.price ? <span className="strike">{formatInr(product.mrp)}</span> : null}
         </div>
         <p className="notice">
-          Guest price {formatInr(product.price)}. You receive <b>{product.karmaCoins} KarmaCoins</b> on this device
-          after checkout — no account.
+          {formatInr(product.price)}. You receive <b>{product.karmaCoins} KarmaCoins</b> on this device after checkout
+          {session ? "." : " — no account."}
         </p>
         <p>{product.description}</p>
         <ul>
@@ -95,7 +96,8 @@ export function ProductPage() {
           ))}
         </ul>
         <div className="notice">
-          Delivery in about {product.deliveryDays} days. Guest checkout — we only ask for an address when you buy.
+          Delivery in about {product.deliveryDays} days
+          {session ? "." : ". Guest checkout — we only ask for an address when you buy."}
         </div>
         <div className="row">
           <button
@@ -173,7 +175,7 @@ export function ProductPage() {
             navigate("/checkout");
           }}
         >
-          Buy now as guest
+          {session ? "Buy now" : "Buy now as guest"}
         </button>
       </div>
     </>
